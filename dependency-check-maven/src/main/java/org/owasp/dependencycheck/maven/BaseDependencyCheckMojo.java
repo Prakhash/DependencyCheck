@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Locale;
+
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.aether.artifact.Artifact;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.plugin.AbstractMojo;
@@ -61,6 +63,7 @@ import org.owasp.dependencycheck.exception.ExceptionCollection;
 import org.owasp.dependencycheck.exception.ReportException;
 import org.owasp.dependencycheck.reporting.ReportGenerator;
 import org.owasp.dependencycheck.utils.Settings;
+import org.owasp.dependencycheck.xml.pom.PomCoordinates;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
@@ -1042,6 +1045,7 @@ public abstract class BaseDependencyCheckMojo extends AbstractMojo implements Ma
                 cve.close();
             }
         }
+        //final ReportGenerator r = new ReportGenerator(p.getName(), engine.getDependencies(), engine.getAnalyzers(), prop);
         final ReportGenerator r = new ReportGenerator(p.getName(), engine.getDependencies(), engine.getAnalyzers(), prop);
         try {
             r.generateReports(outputDir.getAbsolutePath(), format);
@@ -1213,5 +1217,10 @@ public abstract class BaseDependencyCheckMojo extends AbstractMojo implements Ma
         }
     }
     //</editor-fold>
+
+    public PomCoordinates generatePomCordinates(MavenProject mavenProject){
+        return new PomCoordinates(mavenProject.getName(),mavenProject.getVersion(),mavenProject.getArtifactId(),mavenProject.getGroupId());
+
+    }
 
 }

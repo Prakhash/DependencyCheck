@@ -125,6 +125,24 @@ public class ReportGenerator {
         context.put("version", Settings.getString(Settings.KEYS.APPLICATION_VERSION, "Unknown"));
     }
 
+
+    /**
+     * Constructs a new ReportGenerator.
+     *
+     * @param applicationName the application name being analyzed
+     * @param applicationVersion the application version
+     * @param dependencies the list of dependencies
+     * @param analyzers the list of analyzers used
+     * @param properties the database properties (containing timestamps of the
+     * NVD CVE data)
+     */
+
+    public ReportGenerator(String applicationName,String applicationVersion, List<Dependency> dependencies, List<Analyzer> analyzers, DatabaseProperties properties) {
+
+        this(applicationName,dependencies,analyzers,properties);
+        context.put("pomVersion",applicationVersion);
+    }
+
     /**
      * Creates a new Velocity Engine.
      *

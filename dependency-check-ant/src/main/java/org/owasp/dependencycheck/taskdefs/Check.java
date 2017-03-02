@@ -954,6 +954,7 @@ public class Check extends Update {
                         cve.close();
                     }
                 }
+
                 final ReportGenerator reporter = new ReportGenerator(getProjectName(), engine.getDependencies(), engine.getAnalyzers(), prop);
                 reporter.generateReports(reportOutputDirectory, reportFormat);
 
