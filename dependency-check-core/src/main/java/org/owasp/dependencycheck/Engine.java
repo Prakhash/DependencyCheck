@@ -71,12 +71,12 @@ public class Engine implements FileFilter {
     /**
      * A Map of analyzers grouped by Analysis phase.
      */
-    private final Map<AnalysisPhase, List<Analyzer>> analyzers = new EnumMap<AnalysisPhase, List<Analyzer>>(AnalysisPhase.class);
+    private final Map<AnalysisPhase, List<Analyzer>> analyzers = new EnumMap<>(AnalysisPhase.class);
 
     /**
      * A Map of analyzers grouped by Analysis phase.
      */
-    private final Set<FileTypeAnalyzer> fileTypeAnalyzers = new HashSet<FileTypeAnalyzer>();
+    private final Set<FileTypeAnalyzer> fileTypeAnalyzers = new HashSet<>();
 
     /**
      * The ClassLoader to use when dynamically loading Analyzer and Update
@@ -126,6 +126,11 @@ public class Engine implements FileFilter {
      * Properly cleans up resources allocated during analysis.
      */
     public void cleanup() {
+        try {
+            CveDB.getInstance().closeDatabase();
+        } catch (DatabaseException ex) {
+            LOGGER.trace("Error closing the database", ex);
+        }
         ConnectionFactory.cleanup();
     }
 
@@ -213,7 +218,7 @@ public class Engine implements FileFilter {
      * @since v1.4.4
      */
     public List<Dependency> scan(String[] paths, String projectReference) {
-        final List<Dependency> deps = new ArrayList<Dependency>();
+        final List<Dependency> deps = new ArrayList<>();
         for (String path : paths) {
             final List<Dependency> d = scan(path, projectReference);
             if (d != null) {
@@ -276,7 +281,7 @@ public class Engine implements FileFilter {
      * @since v1.4.4
      */
     public List<Dependency> scan(File[] files, String projectReference) {
-        final List<Dependency> deps = new ArrayList<Dependency>();
+        final List<Dependency> deps = new ArrayList<>();
         for (File file : files) {
             final List<Dependency> d = scan(file, projectReference);
             if (d != null) {
@@ -311,7 +316,7 @@ public class Engine implements FileFilter {
      * @since v1.4.4
      */
     public List<Dependency> scan(Collection<File> files, String projectReference) {
-        final List<Dependency> deps = new ArrayList<Dependency>();
+        final List<Dependency> deps = new ArrayList<>();
         for (File file : files) {
             final List<Dependency> d = scan(file, projectReference);
             if (d != null) {
@@ -352,7 +357,7 @@ public class Engine implements FileFilter {
             } else {
                 final Dependency d = scanFile(file, projectReference);
                 if (d != null) {
-                    final List<Dependency> deps = new ArrayList<Dependency>();
+                    final List<Dependency> deps = new ArrayList<>();
                     deps.add(d);
                     return deps;
                 }
@@ -384,7 +389,7 @@ public class Engine implements FileFilter {
      */
     protected List<Dependency> scanDirectory(File dir, String projectReference) {
         final File[] files = dir.listFiles();
-        final List<Dependency> deps = new ArrayList<Dependency>();
+        final List<Dependency> deps = new ArrayList<>();
         if (files != null) {
             for (File f : files) {
                 if (f.isDirectory()) {
@@ -608,9 +613,7 @@ public class Engine implements FileFilter {
      */
     protected ExecutorService getExecutorService(Analyzer analyzer) {
         if (analyzer.supportsParallelProcessing()) {
-            // just a fair trade-off that should be reasonable for all analyzer types
-            final int maximumNumberOfThreads = 4 * Runtime.getRuntime().availableProcessors();
-
+            final int maximumNumberOfThreads = Runtime.getRuntime().availableProcessors();
             LOGGER.debug("Parallel processing with up to {} threads: {}.", maximumNumberOfThreads, analyzer.getName());
             return Executors.newFixedThreadPool(maximumNumberOfThreads);
         } else {
@@ -623,11 +626,10 @@ public class Engine implements FileFilter {
      * Initializes the given analyzer.
      *
      * @param analyzer the analyzer to initialize
-     * @return the initialized analyzer
      * @throws InitializationException thrown when there is a problem
      * initializing the analyzer
      */
-    protected Analyzer initializeAnalyzer(Analyzer analyzer) throws InitializationException {
+    protected void initializeAnalyzer(Analyzer analyzer) throws InitializationException {
         try {
             LOGGER.debug("Initializing {}", analyzer.getName());
             analyzer.initialize();
@@ -650,7 +652,6 @@ public class Engine implements FileFilter {
             }
             throw new InitializationException("Unexpected Exception", ex);
         }
-        return analyzer;
     }
 
     /**
@@ -692,7 +693,7 @@ public class Engine implements FileFilter {
      * @return a list of Analyzers
      */
     public List<Analyzer> getAnalyzers() {
-        final List<Analyzer> ret = new ArrayList<Analyzer>();
+        final List<Analyzer> ret = new ArrayList<>();
         for (AnalysisPhase phase : AnalysisPhase.values()) {
             final List<Analyzer> analyzerList = analyzers.get(phase);
             ret.addAll(analyzerList);
@@ -749,16 +750,9 @@ public class Engine implements FileFilter {
      * database
      */
     private void ensureDataExists() throws NoDataException, DatabaseException {
-        final CveDB cve = new CveDB();
-        try {
-            cve.open();
-            if (!cve.dataExists()) {
-                throw new NoDataException("No documents exist");
-            }
-        } catch (DatabaseException ex) {
-            throw new NoDataException(ex.getMessage(), ex);
-        } finally {
-            cve.close();
+        final CveDB cve = CveDB.getInstance();
+        if (!cve.dataExists()) {
+            throw new NoDataException("No documents exist");
         }
     }
 

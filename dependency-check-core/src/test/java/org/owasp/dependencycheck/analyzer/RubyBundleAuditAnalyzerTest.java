@@ -45,6 +45,7 @@ import org.owasp.dependencycheck.utils.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.junit.Assert.fail;
+import org.owasp.dependencycheck.exception.InitializationException;
 
 /**
  * Unit tests for {@link RubyBundleAuditAnalyzer}.
@@ -65,10 +66,8 @@ public class RubyBundleAuditAnalyzerTest extends BaseDBTestCase {
      *
      * @throws Exception thrown if there is a problem
      */
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         Settings.setBoolean(Settings.KEYS.AUTO_UPDATE, false);
         Settings.setBoolean(Settings.KEYS.ANALYZER_NEXUS_ENABLED, false);
         Settings.setBoolean(Settings.KEYS.ANALYZER_CENTRAL_ENABLED, false);
@@ -124,7 +123,7 @@ public class RubyBundleAuditAnalyzerTest extends BaseDBTestCase {
             assertTrue(dependency.getVersionEvidence().toString().toLowerCase().contains("2.2.2"));
             assertTrue(dependency.getFilePath().endsWith(resource));
             assertTrue(dependency.getFileName().equals("Gemfile.lock"));
-        } catch (Exception e) {
+        } catch (InitializationException | DatabaseException | AnalysisException e) {
             LOGGER.warn("Exception setting up RubyBundleAuditAnalyzer. Make sure Ruby gem bundle-audit is installed. You may also need to set property \"analyzer.bundle.audit.path\".");
             Assume.assumeNoException("Exception setting up RubyBundleAuditAnalyzer; bundle audit may not be installed, or property \"analyzer.bundle.audit.path\" may not be set.", e);
         }
@@ -147,7 +146,7 @@ public class RubyBundleAuditAnalyzerTest extends BaseDBTestCase {
             Vulnerability vulnerability = dependency.getVulnerabilities().first();
             assertEquals(vulnerability.getCvssScore(), 5.0f, 0.0);
 
-        } catch (Exception e) {
+        } catch (InitializationException | DatabaseException | AnalysisException e) {
             LOGGER.warn("Exception setting up RubyBundleAuditAnalyzer. Make sure Ruby gem bundle-audit is installed. You may also need to set property \"analyzer.bundle.audit.path\".");
             Assume.assumeNoException("Exception setting up RubyBundleAuditAnalyzer; bundle audit may not be installed, or property \"analyzer.bundle.audit.path\" may not be set.", e);
         }
