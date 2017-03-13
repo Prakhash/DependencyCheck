@@ -115,7 +115,7 @@ public class ReportGenerator {
         final String scanDate = dateFormat.print(dt);
         final String scanDateXML = dateFormatXML.print(dt);
 
-        context.put("applicationName", applicationName);
+        context.put("name", applicationName);
         context.put("dependencies", dependencies);
         context.put("analyzers", analyzers);
         context.put("properties", properties);
@@ -130,17 +130,21 @@ public class ReportGenerator {
      * Constructs a new ReportGenerator.
      *
      * @param applicationName the application name being analyzed
-     * @param applicationVersion the application version
+     * @param applicationVersion the application version being analyzed
+     * @param artifactID the application version being analyzed
+     * @param applicationVersion the application version being analyzed
      * @param dependencies the list of dependencies
      * @param analyzers the list of analyzers used
      * @param properties the database properties (containing timestamps of the
      * NVD CVE data)
      */
 
-    public ReportGenerator(String applicationName,String applicationVersion, List<Dependency> dependencies, List<Analyzer> analyzers, DatabaseProperties properties) {
+    public ReportGenerator(String applicationName,String applicationVersion,String artifactID,String groupID, List<Dependency> dependencies, List<Analyzer> analyzers, DatabaseProperties properties) {
 
         this(applicationName,dependencies,analyzers,properties);
-        context.put("pomVersion",applicationVersion);
+        context.put("applicationVersion",applicationVersion);
+        context.put("artifactID",artifactID);
+        context.put("groupID",groupID);
     }
 
     /**
